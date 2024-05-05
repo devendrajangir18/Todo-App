@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -28,11 +28,38 @@ def hello_world():
     allTodo = Todo.query.all() 
     return render_template('index.html', allTodo = allTodo) # not html its jinja2 format
 
-@app.route('/show')
-def product():
-    # allTodo = Todo.query.all()
-    # print(allTodo)
-    return 'This is product page'
+@app.route('/delete/<int:sno>')
+def delete(sno):
+    todo = Todo.query.filter_by(sno=sno).first()
+    db.session.delete(todo)
+    db.session.commit()   
+    return redirect('/')
+
+@app.route('/update/<int:sno>', methods = ['GET', 'POST'])
+def update(sno):
+    if request.method == 'POST':
+        title = request.form['title']
+        desc = request.form['desc']
+        todo = Todo.query.filter_by(sno=sno).first()
+        todo.title = title
+        todo.desc = desc
+        db.session.add(todo)
+        db.session.commit() 
+        return redirect('/') 
+    
+    todo = Todo.query.filter_by(sno=sno).first()
+    return render_template('update.html', todo = todo)
+
+# @app.route('/show')
+# def product():
+#     # allTodo = Todo.query.all()
+#     # print(allTodo)
+#     return 'This is product page'
+
+# @app.route('/create_db')
+# def create_db():
+#     db.create_all()
+#     return 'Database created successfully!'
 
 
 if __name__ == "__main__":
